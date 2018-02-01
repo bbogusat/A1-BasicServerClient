@@ -47,40 +47,7 @@ public class ClientToServer implements Runnable{
 					out.flush();
 				}
 			}
-
-			//Send Operator to the server with an enter
-
-			// ISBN is needed on the SUBMIT
-			// Run through attributes to clean them (Remove any double spaces, and check if they exist)
-			// Return a list of attributes that are there and cleaned
-			// If operation is GET ALL - don't check attributes
 		}
-//		if(serverResponding.get() && !(text = textField.getText().trim()).isEmpty()) {
-//			text = text.replaceAll("[\r\n]+", "\n");
-//			PrintWriter out = null;
-//			try {
-//				out = new PrintWriter(this.clientSocket.getOutputStream(), false);
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			out.println(text);
-//
-//			out.flush();
-//			String[] operators = {"SUBMIT\n","REMOVE\n","UPDATE\n","GET\n"};
-//			boolean termination = false;
-//
-//			for (String operator : operators) {
-//				if(text.startsWith(operator)) {
-//					termination = true;
-//				}
-//			}
-//
-//			if(!text.equals("GET\nALL") && termination) {
-//				out.println("");
-//				out.flush();
-//			}
-//		}
 	}
 
 	private HashMap<String,String> cleanAttributes(HashMap<String,String> attributes){

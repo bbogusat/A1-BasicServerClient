@@ -2,8 +2,8 @@ import java.awt.EventQueue;
 import java.awt.event.ActionListener;
 
 public class Client {
-	public static void main(String args[]) throws Exception {	
-		
+	public static void main(String args[]) throws Exception {
+
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -15,11 +15,8 @@ public class Client {
 				clientGui.getBtnSend().addActionListener(clientHandler);
 				clientGui.getBtnDisconnect().addActionListener(clientHandler);
 			}
-		});	
+		});
 
-
-	
-		
 	}
-	
+
 }
