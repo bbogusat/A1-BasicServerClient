@@ -50,6 +50,14 @@ public class ServerWorker implements Runnable{
         			System.out.println("Handling GET from: " + clientSocket.getInetAddress().getHostAddress());
         			response = serverOperation.get(booklist);
         		}
+        		else if(message.equals("REMOVE")) {
+        			System.out.println("Handling REMOVE from: " + clientSocket.getInetAddress().getHostAddress());
+        			response = serverOperation.remove(booklist);
+        		}
+        		else if(message.equals("UPDATE")) {
+        			System.out.println("Handling UPDATE from: " + clientSocket.getInetAddress().getHostAddress());
+        			response = serverOperation.update(booklist);
+        		}
         		
         		if(!response.toString().isEmpty()) {
         			serverOperation.sendToClient(response.toString());

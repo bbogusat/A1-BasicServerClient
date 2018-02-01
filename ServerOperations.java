@@ -10,27 +10,27 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerOperations {
-	
-	
+
+
 	private PrintWriter serverOut;
-	private Scanner serverInput; 
-	
+	private Scanner serverInput;
+
 	public ServerOperations(Scanner serverInput, PrintWriter serverOut) {
 		this.serverInput = serverInput;
 		this.serverOut = serverOut;
-		
+
 	}
-	
+
 	public StringBuilder submit(ConcurrentHashMap<Long, HashMap<String,String>> booklist) {
 		StringBuilder response = new StringBuilder();
 		HashMap<String,String> clientInput = null;
-		
+
 		try {
 			clientInput = parseInput();
 		} catch (IOException e) {
 			response.append(e.getMessage());
 		}
-		
+
 		if (clientInput != null && !clientInput.isEmpty()) {
 			try {
 				if(validSubmit(clientInput, booklist)) {
@@ -47,7 +47,7 @@ public class ServerOperations {
 		}
 		return response;
 	}
-	
+
 	public StringBuilder get(ConcurrentHashMap<Long, HashMap<String,String>> booklist) {
 		StringBuilder response = new StringBuilder();
 		Map<Long,HashMap<String,String>> matches = null;
@@ -55,17 +55,19 @@ public class ServerOperations {
 		if(!this.serverInput.hasNext("ALL")) {
 			try {
 				clientInput = parseInput();
-				matches = matchGet(clientInput,booklist);
+
 			} catch (IOException e) {
-				response.append("Error - Invalid Protocol\n");
+				response.append(e.getMessage());
 			}
-				
-			
+
+			matches = getMatches(clientInput, booklist);
+
+
 		} else {
 			this.serverInput.nextLine();
 			matches = booklist;
 		}
-		
+
 		if(matches != null && !matches.isEmpty()) {
 			//serverOut.println("SEQUENCESIZE " + messageSize);
 			for(HashMap<String,String> book : matches.values()){
@@ -81,10 +83,42 @@ public class ServerOperations {
 		}
 		return response;
 	}
-	
+
 	public StringBuilder remove(ConcurrentHashMap<Long, HashMap<String,String>> booklist) {
 		StringBuilder response = new StringBuilder();
-		
+		HashMap<String,String> clientInput = null;
+		Map<Long,HashMap<String,String>> removals = null;
+
+		clientInput = parseInput();
+		removals = getMatches(clientInput, booklist);
+
+		for (Long bookISBN : removals.keySet()) {
+			booklist.remove(bookISBN);
+			response.append("Removed: " + toBibTextFormat(removals.get(bookISBN)) + "\n");
+		}
+
+		if (removals.isEmpty()) {
+			System.out.println("Nothing Removed.");
+			response.append("No matches found. Nothing removed");
+		}
+
+		return response;
+	}
+
+	public StringBuilder update(ConcurrentHashMap<Long, HashMap<String,String>> booklist) {
+		StringBuilder response = new StringBuilder();
+		HashMap<String,String> clientInput = null;
+
+		clientInput = parseInput();
+
+		if (clientInput.containsKey("ISBN")) {
+			try{
+				booklist.put(Long.parseLong(clientInput.get("ISBN")), clientInput);
+			} catch(NumberFormatException e){
+				response.append("Invalid ISBN.");
+			}
+		}
+
 		return response;
 	}
 
@@ -92,18 +126,18 @@ public class ServerOperations {
 		Long isbn;
 		if(clientInput.get("ISBN") != null && !booklist.containsKey(isbn = Long.parseLong(clientInput.get("ISBN")))  ) {
 			booklist.put(isbn, clientInput);
-			
+
 			return true;
 		}
-		
+
 		return false;
 
 	}
-	
-	private Map<Long,HashMap<String,String>> matchGet(HashMap<String,String> clientInput, ConcurrentHashMap<Long, HashMap<String,String>> booklist) {
-		
+
+	private Map<Long,HashMap<String,String>> getMatches(HashMap<String,String> clientInput, ConcurrentHashMap<Long, HashMap<String,String>> booklist) {
+
 		Map<Long,HashMap<String,String>> matches = new ConcurrentHashMap<Long,HashMap<String,String>>(booklist);
-		
+
 		// For each value searched for
 		for (Entry<String,String> entry : clientInput.entrySet()) {
 			// For each book in the current matching list
@@ -121,12 +155,12 @@ public class ServerOperations {
 						matches.remove(book.getKey());
 					}
 				}
-				
+
 			}
 		}
 		return matches;
 	}
-	
+
 	private HashMap<String,String> parseInput() throws IOException {
 		List<String> acceptedInputs = new ArrayList<String>();
 		HashMap<String,String> clientInput = new HashMap<String,String>();
@@ -141,7 +175,7 @@ public class ServerOperations {
 		acceptedInputs.add("AUTHOR");
 		acceptedInputs.add("PUBLISHER");
 		acceptedInputs.add("YEAR");
-		
+
 		while(this.serverInput.hasNextLine() && !(line = this.serverInput.nextLine()).isEmpty()) {
 			index = 0;
 			match = false;
@@ -168,24 +202,24 @@ public class ServerOperations {
 				err = err.concat(line + "\n");
 			}
 		}
-		
+
 		if(!err.isEmpty()) {
 			throw new IOException(err);
 		}
-		
+
 		return clientInput;
 	}
-	
 
-	
+
+
 	private String toBibTextFormat(HashMap<String,String> book){
-		
+
 		StringBuilder strBuild = new StringBuilder();
 		strBuild.append("@book {");
 		if (book.containsKey("AUTHOR") && book.containsKey("YEAR")) {
 			String[] authors = book.get("AUTHOR").split(" and ");
 			String[] author1 = authors[0].split(",");
-			
+
 			strBuild.append(author1[0]);
 			strBuild.append(book.get("YEAR") + ",");
 		}
@@ -194,10 +228,10 @@ public class ServerOperations {
 			strBuild.append("\t" +attributes.getKey()+ " = {" + attributes.getValue() + "},\n");
 		}
 		strBuild.append("\t" + "ISBN = {" + book.get("ISBN") + "}\n}");
-		
+
 		return strBuild.toString();
 	}
-	
+
 	public void sendToClient(String text) {
 		String[] lines = text.split("\\r?\\n");
 		int messageSize = lines.length;
@@ -206,6 +240,6 @@ public class ServerOperations {
 			this.serverOut.println(line);
 		}
 		this.serverOut.flush();
-		
+
 	}
 }
