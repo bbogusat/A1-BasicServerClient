@@ -6,13 +6,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientToServer implements Runnable{
-	
+
 	private ClientController controller;
 	private String operation;
 	private HashMap<String, String> attributes;
 	private Socket clientSocket;
 	private AtomicBoolean serverResponding;
-	
+
 	public ClientToServer(ClientController controller, String operation, HashMap<String, String> attributes, Socket clientSocket, AtomicBoolean serverResponding) {
 		this.controller = controller;
 		this.operation = operation;
@@ -24,7 +24,7 @@ public class ClientToServer implements Runnable{
 	@Override
 	public void run() {
 		if(serverResponding.get() && !operation.isEmpty()) {
-			
+
 			PrintWriter out = null;
 			try {
 				out = new PrintWriter(this.clientSocket.getOutputStream(), false);
@@ -37,7 +37,7 @@ public class ClientToServer implements Runnable{
 				out.flush();
 			}else {
 				out.println(operation);
-				
+
 				HashMap<String,String> cleanAttributes = cleanAttributes(attributes);
 				if(!cleanAttributes.isEmpty() && validISBN(cleanAttributes)) {
 					for(Entry<String, String> attribute : cleanAttributes.entrySet()) {
@@ -46,10 +46,10 @@ public class ClientToServer implements Runnable{
 					out.println("");
 					out.flush();
 				}
-			} 
-			
+			}
+
 			//Send Operator to the server with an enter
-			
+
 			// ISBN is needed on the SUBMIT
 			// Run through attributes to clean them (Remove any double spaces, and check if they exist)
 			// Return a list of attributes that are there and cleaned
@@ -65,24 +65,24 @@ public class ClientToServer implements Runnable{
 //				e.printStackTrace();
 //			}
 //			out.println(text);
-//			
+//
 //			out.flush();
 //			String[] operators = {"SUBMIT\n","REMOVE\n","UPDATE\n","GET\n"};
 //			boolean termination = false;
-//			
+//
 //			for (String operator : operators) {
 //				if(text.startsWith(operator)) {
 //					termination = true;
 //				}
 //			}
-//			
+//
 //			if(!text.equals("GET\nALL") && termination) {
 //				out.println("");
 //				out.flush();
 //			}
 //		}
 	}
-	
+
 	private HashMap<String,String> cleanAttributes(HashMap<String,String> attributes){
 		HashMap<String,String> cleanAttributes = new HashMap<String,String>();
 		String newAttribute;
@@ -97,7 +97,7 @@ public class ClientToServer implements Runnable{
 		}
 		return cleanAttributes;
 	}
-	
+
 	private boolean validISBN(HashMap<String,String> cleanAttributes) {
 		if(cleanAttributes.containsKey("ISBN")) {
 			String[] strIsbn = cleanAttributes.get("ISBN").split("");
@@ -114,7 +114,7 @@ public class ClientToServer implements Runnable{
 					return false;
 				}
 			}
-			
+
 			int sum = 0;
 			int checkDigit;
 			for(int i=0; i<arrIsbn.length-1;i=i+2) {

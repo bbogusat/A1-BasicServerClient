@@ -16,8 +16,8 @@ public class ClientController implements ActionListener{
 	private Socket clientSocket;
 	private Scanner clientScanner;
 	private AtomicBoolean serverResponding ;
-	
-	
+
+
 	public ClientController(ClientGUI clientGui) {
 		this.clientGui = clientGui;
 	}
@@ -27,7 +27,7 @@ public class ClientController implements ActionListener{
 		// TODO Auto-generated method stub
 		if (e.getActionCommand() != null && e.getActionCommand() == "Connect") {
 			if (clientSocket != null && !clientSocket.isClosed()) {
-				writeToGui("Already connect to:"+ "\nHOST: " +clientSocket.getInetAddress() + 
+				writeToGui("Already connect to:"+ "\nHOST: " +clientSocket.getInetAddress() +
 						"\nPORT: " + clientSocket.getPort() + "\nPlease Disconnect First and try again.");
 				return;
 			}
@@ -55,12 +55,12 @@ public class ClientController implements ActionListener{
 			} else {
 				writeToGui("You aren't connected to any server.");
 			}
-			
-			
+
+
 		}
-		
+
 	}
-	
+
 	private void connect(InetAddress serverAddress, int serverPort) {
 		try {
 			clientSocket = new Socket(serverAddress, serverPort);
@@ -77,12 +77,12 @@ public class ClientController implements ActionListener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
+
         Thread clientFromServer = new Thread(new ClientFromServer(this, serverResponseScanner, serverResponding));
-        
+
         clientFromServer.start();
 	}
-	
+
 	public void disconnect() {
 		if(clientSocket != null && !clientSocket.isClosed()) {
 			try {
@@ -91,19 +91,19 @@ public class ClientController implements ActionListener{
 			} catch (IOException e1) {
 				writeToGui("Unable to close the socket. Error : " + e1.getMessage());
 			}
-			
+
 		}else {
 			writeToGui("Connection already closed.");
 		}
 		return;
 	}
-	
+
 	private void send() {
 		String operation = clientGui.getOpButtons().getSelection().getActionCommand();
 		Thread clientToServer = new Thread(new ClientToServer(this, operation, getAttributes(), clientSocket, serverResponding));
         clientToServer.start();
 	}
-	
+
 	private HashMap<String,String> getAttributes(){
 		HashMap<String,String> attributes = new HashMap<>();
 		attributes.put("ISBN", clientGui.getIsbnField().getText());
@@ -113,12 +113,12 @@ public class ClientController implements ActionListener{
 		attributes.put("YEAR", clientGui.getYearField().getText());
 		return attributes;
 	}
-	
+
 	public void writeToGui(String text) {
 		clientGui.getServerTextArea().setText(text);
 	}
-	
-	
-	
+
+
+
 
 }

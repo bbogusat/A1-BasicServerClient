@@ -89,7 +89,11 @@ public class ServerOperations {
 		HashMap<String,String> clientInput = null;
 		Map<Long,HashMap<String,String>> removals = null;
 
-		clientInput = parseInput();
+		try {
+			clientInput = parseInput();
+		} catch (IOException e) {
+			response.append(e.getMessage());
+		}
 		removals = getMatches(clientInput, booklist);
 
 		for (Long bookISBN : removals.keySet()) {
@@ -109,14 +113,22 @@ public class ServerOperations {
 		StringBuilder response = new StringBuilder();
 		HashMap<String,String> clientInput = null;
 
-		clientInput = parseInput();
+		try {
+			clientInput = parseInput();
+		} catch (IOException e) {
+			response.append(e.getMessage());
+		}
 
-		if (clientInput.containsKey("ISBN")) {
-			try{
-				booklist.put(Long.parseLong(clientInput.get("ISBN")), clientInput);
-			} catch(NumberFormatException e){
-				response.append("Invalid ISBN.");
+		try{
+			Long isbn;
+			if (clientInput.containsKey("ISBN") && booklist.containsKey((isbn = Long.parseLong(clientInput.get("ISBN"))))) {
+				booklist.put(isbn, clientInput);
 			}
+			else{
+				response.append("No matching ISBN found.");
+			}
+		} catch(NumberFormatException e){
+			response.append("Invalid ISBN.");
 		}
 
 		return response;
@@ -227,7 +239,8 @@ public class ServerOperations {
 		for (Entry<String,String> attributes : book.entrySet()) {
 			strBuild.append("\t" +attributes.getKey()+ " = {" + attributes.getValue() + "},\n");
 		}
-		strBuild.append("\t" + "ISBN = {" + book.get("ISBN") + "}\n}");
+		strBuild.deleteCharAt(strBuild.length() - 2);
+		strBuild.append("}");
 
 		return strBuild.toString();
 	}
