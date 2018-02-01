@@ -14,6 +14,7 @@ public class ServerOperations {
 
 	private PrintWriter serverOut;
 	private Scanner serverInput;
+	private HashMap<String,String> prevClientInput;
 
 	public ServerOperations(Scanner serverInput, PrintWriter serverOut) {
 		this.serverInput = serverInput;
@@ -69,22 +70,16 @@ public class ServerOperations {
 		}
 
 		if(matches != null && !matches.isEmpty()) {
-			//serverOut.println("SEQUENCESIZE " + messageSize);
 			for(HashMap<String,String> book : matches.values()){
 				response.append(toBibTextFormat(book) + "\n");
 			}
-			//sendToClient(response.toString());
-			//int messageSize = message.split("\n").lenght();
-			//serverOut.println("SEQUENCESIZE " + messageSize);
-			//serverOut.print(message.toString());
-			//serverOut.flush();
 		} else {
 			response.append("Error - No Matches Found");
 		}
 		return response;
 	}
 
-	public StringBuilder remove(ConcurrentHashMap<Long, HashMap<String,String>> booklist) {
+	public StringBuilder remove(ConcurrentHashMap<Long, HashMap<String,String>> booklist, int confirmation) {
 		StringBuilder response = new StringBuilder();
 		HashMap<String,String> clientInput = null;
 		Map<Long,HashMap<String,String>> removals = null;
@@ -96,16 +91,22 @@ public class ServerOperations {
 		}
 		removals = getMatches(clientInput, booklist);
 
-		for (Long bookISBN : removals.keySet()) {
-			booklist.remove(bookISBN);
-			response.append("Removed: " + toBibTextFormat(removals.get(bookISBN)) + "\n");
-		}
-
 		if (removals.isEmpty()) {
 			System.out.println("Nothing Removed.");
 			response.append("No matches found. Nothing removed");
+		}else if (confirmation==0 || !(this.prevClientInput.equals(clientInput))){
+			StringBuilder check = new StringBuilder();
+			response.append("To confirm removal please resubmit the same request.\nYou are trying to remove: \n" );
+			for (Long bookISBN : removals.keySet()) {
+				response.append(toBibTextFormat(removals.get(bookISBN)) + "\n");
+			}
+			this.prevClientInput = clientInput;
+		} else{
+			for (Long bookISBN : removals.keySet()) {
+				booklist.remove(bookISBN);
+				response.append("Removed: " + toBibTextFormat(removals.get(bookISBN)) + "\n");
+			}
 		}
-
 		return response;
 	}
 
