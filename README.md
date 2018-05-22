@@ -1,1 +1,1 @@
-# CP372-A1-BasicServerClient
+#A1-BasicServerClient
